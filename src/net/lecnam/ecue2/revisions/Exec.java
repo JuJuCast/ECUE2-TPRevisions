@@ -4,6 +4,8 @@ public class Exec {
 
     public static void main(String[] args) {
         testerClient();
+        testerExceptionSolde();
+        testerCompteBancaire();
     }
 
     public static void testerClient() {
@@ -37,5 +39,66 @@ public class Exec {
             System.out.println("\n[EXCEPTION CATTURÉE] " + e.getMessage());
             System.out.println("Montant manquant : " + e.getMontantManquant() + " €");
         }
+
+    }
+
+    public static void testerCompteBancaire() {
+        // 1. Création d'un client
+        Client client = new Client("Forestier", "Julien", "C001");
+
+        // 2. Création d'un compte de test via une classe anonyme (puisqu'elle est abstraite)
+        CompteBancaire compte = new CompteBancaire("FR7612345678", client) {
+            @Override
+            public void retirer(double montant) throws SoldeInsuffisantException {
+                if (montant > getSolde()) {
+                    double manquant = montant - getSolde();
+                    throw new SoldeInsuffisantException("Retrait impossible : fonds insuffisants.", manquant);
+                }
+                debiter(montant); // Utilisation de la méthode protected de la classe mère
+            }
+
+            @Override
+            public double calculerInterets() {
+                return 0.0;
+            }
+        };
+
+        // --- Test de l'état initial ---
+        System.out.println("=== ÉTAT INITIAL ===");
+        System.out.println(compte);
+        System.out.println("Solde actuel : " + compte.getSolde() + " €\n");
+
+        // --- Test d'un dépôt valide ---
+        System.out.println("=== TEST DÉPÔT (500 €) ===");
+        compte.deposer(500.0);
+        System.out.println("Nouveau solde : " + compte.getSolde() + " €\n");
+
+        // --- Test d'un dépôt invalide (montant négatif ou nul) ---
+        System.out.println("=== TEST DÉPÔT INVALIDE (-50 €) ===");
+        try {
+            compte.deposer(-50.0);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Exception bien attrapée : " + e.getMessage() + "\n");
+        }
+
+        // --- Test d'un retrait valide (200 €) ---
+        System.out.println("=== TEST RETRAIT VALIDE (200 €) ===");
+        try {
+            compte.retirer(200.0);
+            System.out.println("Retrait réussi ! Solde restant : " + compte.getSolde() + " €\n");
+        } catch (SoldeInsuffisantException e) {
+            System.out.println("Erreur : " + e.getMessage());
+        }
+
+        // --- Test d'un retrait trop élevé (pour déclencher l'exception checked) ---
+        System.out.println("=== TEST RETRAIT EXCESSIF (1000 €) ===");
+        try {
+            compte.retirer(1000.0);
+        } catch (SoldeInsuffisantException e) {
+            System.out.println("Exception attrapée avec succès !");
+            System.out.println("Message : " + e.getMessage());
+            System.out.println("Montant manquant : " + e.getMontantManquant() + " €");
+        }
+
     }
 }
