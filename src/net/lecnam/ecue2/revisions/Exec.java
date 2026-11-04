@@ -17,4 +17,25 @@ public class Exec {
         System.out.println("c1 est égal à c2 ? " + c1.equals(c2));
         System.out.println("c1 est égal à c3 (même numéro) ? " + c1.equals(c3));
     }
+
+    public static void testerExceptionSolde() {
+        double soldeActuel = 50.0;
+        double montantRetrait = 120.0;
+
+        System.out.println("Solde du compte : " + soldeActuel + " €");
+        System.out.println("Tentative de retrait de : " + montantRetrait + " €");
+
+        try {
+            if (montantRetrait > soldeActuel) {
+                double manquant = montantRetrait - soldeActuel;
+                throw new SoldeInsuffisantException("Erreur : Solde insuffisant pour effectuer le retrait.", manquant);
+            }
+
+            System.out.println("Retrait effectué avec succès !");
+
+        } catch (SoldeInsuffisantException e) {
+            System.out.println("\n[EXCEPTION CATTURÉE] " + e.getMessage());
+            System.out.println("Montant manquant : " + e.getMontantManquant() + " €");
+        }
+    }
 }

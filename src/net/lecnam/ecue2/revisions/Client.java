@@ -29,7 +29,7 @@ public class Client {
     public String toString() {
         return "Client [N°: " + numeroClient + "] " + prenom + " " + nom;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
